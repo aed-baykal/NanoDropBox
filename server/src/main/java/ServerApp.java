@@ -1,8 +1,7 @@
-import server.ChatServer;
+import server.NanoDropBoxServer;
 
 public class ServerApp {
-
     public static void main(String[] args) {
-        new ChatServer().start();
+        new NanoDropBoxServer().start();
     }
 }
