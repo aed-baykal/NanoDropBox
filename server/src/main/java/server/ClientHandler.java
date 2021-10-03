@@ -14,7 +14,7 @@ import java.util.TimerTask;
 public class ClientHandler {
 
     private Socket socket;
-    private ChatServer chatServer;
+    private NanoDropBoxServer nanoDropBoxServer;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
     private String currentUsername;
@@ -22,9 +22,9 @@ public class ClientHandler {
     private boolean exist;
     private static final long TIME_OUT = 3000000;
 
-    public ClientHandler(Socket socket, ChatServer chatServer) {
+    public ClientHandler(Socket socket, NanoDropBoxServer nanoDropBoxServer) {
         try {
-            this.chatServer = chatServer;
+            this.nanoDropBoxServer = nanoDropBoxServer;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
@@ -36,16 +36,16 @@ public class ClientHandler {
         }
     }
 
-    public void handle() {
-        chatServer.getStartingService().execute(() -> {
-            try {
-                authenticate();
-                if (exist) readMessages();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
+//    public void handle() {
+//        nanoDropBoxServer.getStartingService().execute(() -> {
+//            try {
+//                authenticate();
+//                if (exist) readMessages();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//    }
 
     private void readMessages() throws IOException {
         try {
@@ -57,7 +57,7 @@ public class ClientHandler {
                 //Оставил switch для дальнейшего добавления функционала.
                 switch (message.getMessageType()) {
                     case PRIVATE:
-                        chatServer.sendPrivateMessage(message);
+//                        nanoDropBoxServer.sendPrivateMessage(message);
                         System.out.println("Файл получен!");
                         break;
                 }
@@ -102,13 +102,13 @@ public class ClientHandler {
                 String authMessage = inputStream.readUTF();
                 System.out.println("Auth received");
                 ChatMessage msg = ChatMessage.unmarshall(authMessage);
-                String username = chatServer.getAuthService().getUsernameByLoginAndPassword(msg.getLogin(), msg.getPassword());
+                String username = " "; //nanoDropBoxServer.getAuthService().getUsernameByLoginAndPassword(msg.getLogin(), msg.getPassword());
                 ChatMessage response = new ChatMessage();
                 if (username == null || username.equals("")) {
                     response.setMessageType(MessageType.ERROR);
                     response.setBody("Wrong username or password!");
                     System.out.println("Wrong credentials");
-                } else if (chatServer.isUserOnline(username)) {
+                } else if (true/*nanoDropBoxServer.isUserOnline(username)*/) {
                     response.setMessageType(MessageType.ERROR);
                     response.setBody("Double auth!");
                     System.out.println("Double auth!");
@@ -117,7 +117,7 @@ public class ClientHandler {
                     response.setMessageType(MessageType.AUTH_CONFIRM);
                     response.setBody(username);
                     currentUsername = username;
-                    chatServer.subscribe(this);
+//                    nanoDropBoxServer.subscribe(this);
                     System.out.println("Subscribed");
                     timer.cancel();
                     sendMessage(response);
@@ -132,7 +132,7 @@ public class ClientHandler {
 
     public void closeHandler() {
         try {
-            chatServer.unsubscribe(this);
+//            nanoDropBoxServer.unsubscribe(this);
             this.socket.close();
         } catch (IOException e) {
             e.printStackTrace();

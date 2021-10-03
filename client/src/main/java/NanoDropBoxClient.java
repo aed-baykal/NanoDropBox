@@ -8,6 +8,8 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class NanoDropBoxClient {
 
@@ -32,17 +34,63 @@ public class NanoDropBoxClient {
                         }
                     });
             System.out.println("Client started");
-            ChannelFuture f = b.connect(HOST, PORT).sync();
+
+            ChannelFuture future = b.connect(HOST, PORT).sync();
             System.out.println("NDBC TEST");
-            FileUploadFile ful = new FileUploadFile(
-                    new File("/home/andrey/IntellijWorkPlace/NanoDropBox/client/src/main/java/test.txt"));
-            f.channel().writeAndFlush(ful).sync();
-            f.channel().closeFuture().sync();
+
+            System.out.println("Enter Directory for sync: ");
+            Scanner scanner = new Scanner(System.in);
+            String directoryForControl = scanner.nextLine();
+            String[] allFiles = getFileList(directoryForControl);
+            initDirectory(future, allFiles);
+            new Watchers(future, allFiles).run();
+
+            boolean notStopped = true;
+            while (notStopped) {
+                System.out.println("Enter comand: ");
+                int comand = scanner.nextInt();
+                switch (comand) {
+                    case (1): {
+                        System.out.println("All deleted");
+                        break;
+                    }
+                    case (2): {
+                        System.out.println("All restored");
+                        break;
+                    }
+                    case (3): {
+                        System.out.println("All synchronized");
+                    }
+                    case (4): {
+                        System.out.println("All Stopped");
+                        notStopped = false;
+                        break;
+                    }
+                }
+            }
+            future.channel().closeFuture().sync();
             System.out.println("NDBC end");
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         } finally {
             group.shutdownGracefully();
         }
     }
+
+    private void initDirectory(ChannelFuture f, String[] allFiles) throws InterruptedException {
+        for (String fileByFile : allFiles) {
+            FileUploadFile ful = new FileUploadFile(new File(fileByFile));
+            f.channel().writeAndFlush(ful).sync();
+        }
+    }
+
+    public String[] getFileList(String dirPath) {
+        File file = new File(dirPath);
+        String[] filesFullPath  = file.list();
+        for (int i = 0; i<filesFullPath.length; i++) {
+            filesFullPath[i] = dirPath + "/" + filesFullPath[i];
+        }
+        return filesFullPath;
+    }
+
 }
