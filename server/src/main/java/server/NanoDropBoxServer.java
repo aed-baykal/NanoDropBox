@@ -17,7 +17,7 @@ public class NanoDropBoxServer {
     private final ServerBootstrap server;
 
     public NanoDropBoxServer() {
-        this.bossGroup = new NioEventLoopGroup(1);
+        this.bossGroup = new NioEventLoopGroup();
         this.workerGroup = new NioEventLoopGroup();
         this.server = new ServerBootstrap();
     }

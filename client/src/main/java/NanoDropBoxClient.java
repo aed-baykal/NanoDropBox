@@ -17,6 +17,8 @@ public class NanoDropBoxClient {
     private static final String HOST = "localhost";
 
     public void start() {
+        String directoryForControl;
+        Scanner scanner;
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -34,14 +36,15 @@ public class NanoDropBoxClient {
                         }
                     });
             System.out.println("Client started");
-
             ChannelFuture future = b.connect(HOST, PORT).sync();
-            System.out.println("NDBC TEST");
 
-            System.out.println("Enter Directory for sync: ");
-            Scanner scanner = new Scanner(System.in);
-            String directoryForControl = scanner.nextLine();
+            do {
+                System.out.println("Enter Directory for sync: ");
+                scanner = new Scanner(System.in);
+                directoryForControl = scanner.nextLine();
+            } while (!new File(directoryForControl).isDirectory());
             String[] allFiles = getFileList(directoryForControl);
+
             initDirectory(future, allFiles);
             new Watchers(future, allFiles).run();
 
@@ -78,10 +81,20 @@ public class NanoDropBoxClient {
     }
 
     private void initDirectory(ChannelFuture f, String[] allFiles) throws InterruptedException {
+        FileUploadFile ful;
         for (String fileByFile : allFiles) {
-            FileUploadFile ful = new FileUploadFile(new File(fileByFile));
-            f.channel().writeAndFlush(ful).sync();
+            if (new File(fileByFile).isDirectory()) {
+                String[] allFilesInner =  getFileList(fileByFile);
+                initDirectory(f, allFilesInner);
+            } else {
+                ful = new FileUploadFile(new File(fileByFile));
+                f.channel().writeAndFlush(ful).sync();
+                System.out.println(fileByFile);
+            }
         }
+        ful = new FileUploadFile();
+        ful.setComand("CLOSE");
+        f.channel().writeAndFlush(ful).sync();
     }
 
     public String[] getFileList(String dirPath) {

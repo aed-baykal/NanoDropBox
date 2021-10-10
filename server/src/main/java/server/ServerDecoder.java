@@ -13,38 +13,47 @@ public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
     private final String filePathForStore =
             "/home/andrey/IntellijWorkPlace/NanoDropBox/server/src/main/resources/Store";
-    private static final int CHUNKE_LENGTH = 2000000;
+    private static final int CHUNK_LENGTH = 2000000;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FileUploadFile msg) throws Exception {
         System.out.println("Receive new message from Client.");
+        if (msg.getComand().equals("CLOSE")) ctx.close();
+        else writeMessage(msg);
+
+    }
+
+    private void writeMessage(FileUploadFile msg) throws IOException {
         String filePath = msg.getFileName();
         File file = msg.getFile();
+        String destinationPath = filePathForStore + filePath;
         prepareFilePlace(filePath, file);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        FileOutputStream fileOutputStream = new FileOutputStream(filePathForStore + filePath);
-        writeFile(file, fileInputStream, fileOutputStream);
-        ctx.close();
-
+        writeFile(file, destinationPath);
     }
 
     private void prepareFilePlace(String filePath, File file) {
-        String destinationPath = filePathForStore + filePath;
-        destinationPath = destinationPath
-                .substring(0, destinationPath.length() - file.getName().length());
-        new File(destinationPath).mkdirs();
+        String dirPath = filePathForStore + filePath;
+            dirPath = dirPath
+                    .substring(0, dirPath.length() - file.getName().length());
+        if (!new File(dirPath).exists()) new File(dirPath).mkdirs();
+
     }
 
-    private void writeFile(File file, FileInputStream fileInputStream, FileOutputStream fileOutputStream) throws IOException {
+    private void writeFile(File file, String destinationPath) throws IOException {
+
+        FileInputStream fileInputStream = new FileInputStream(file);
+        FileOutputStream fileOutputStream = new FileOutputStream(destinationPath);
         long lengthOfFile = file.length();
         int repeat = 0;
-        for (int i = 0; i < lengthOfFile / CHUNKE_LENGTH; i++) {
-            byte[] fileContent = new byte[CHUNKE_LENGTH];
-            fileInputStream.read(fileContent);
-            fileOutputStream.write(fileContent);
-            repeat++;
+        if (lengthOfFile/ CHUNK_LENGTH >= 1) {
+            for (int i = 0; i < lengthOfFile / CHUNK_LENGTH; i++) {
+                byte[] fileContent = new byte[CHUNK_LENGTH];
+                fileInputStream.read(fileContent);
+                fileOutputStream.write(fileContent);
+                repeat++;
+            }
         }
-        byte[] fileContent = new byte[(int)(lengthOfFile - CHUNKE_LENGTH *repeat)];
+        byte[] fileContent = new byte[(int) (lengthOfFile - CHUNK_LENGTH * repeat)];
         fileInputStream.read(fileContent);
         fileOutputStream.write(fileContent);
         fileInputStream.close();
@@ -58,7 +67,7 @@ public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client disconnected");
+        System.out.println("Client inactive");
     }
 
     @Override

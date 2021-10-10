@@ -8,6 +8,7 @@ public class DatabaseAuthService implements AuthService{
     @Override
     public void start() {
         dbService = ClientsDatabaseService.getInstance();
+        System.out.println("Auth service started");
     }
 
     @Override

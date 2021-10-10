@@ -16,7 +16,7 @@ public class ClientDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client disconnected");
+        System.out.println("Client inactive");
     }
 
     @Override
