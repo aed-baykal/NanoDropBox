@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
-    private final String filePathForStore =
+    private String filePathForStore =
             "/home/andrey/IntellijWorkPlace/NanoDropBox/server/src/main/resources/Store";
     private static final int CHUNK_LENGTH = 2000000;
 
@@ -26,13 +26,14 @@ public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
     private void writeMessage(FileUploadFile msg) throws IOException {
         String filePath = msg.getFileName();
         File file = msg.getFile();
-        String destinationPath = filePathForStore + filePath;
-        prepareFilePlace(filePath, file);
-        writeFile(file, destinationPath);
+        String destinationPath = filePathForStore + "/" + msg.getName() + filePath;
+        prepareFilePlace(destinationPath, file);
+        if (!file.isDirectory()) writeFile(file, destinationPath);
+        else new File(destinationPath).mkdirs();
     }
 
-    private void prepareFilePlace(String filePath, File file) {
-        String dirPath = filePathForStore + filePath;
+    private void prepareFilePlace(String dirPath, File file) {
+
             dirPath = dirPath
                     .substring(0, dirPath.length() - file.getName().length());
         if (!new File(dirPath).exists()) new File(dirPath).mkdirs();

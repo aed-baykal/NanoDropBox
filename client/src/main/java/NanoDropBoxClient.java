@@ -9,15 +9,19 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
+import java.nio.file.Path;
+import java.util.*;
 
 public class NanoDropBoxClient {
 
     private static final int PORT = 12256;
     private static final String HOST = "localhost";
+    private Map<Path, Set<Path>> multiMap;
+    public String directoryForControl;
+    private String name = "first";
 
     public void start() {
-        String directoryForControl;
+
         Scanner scanner;
         EventLoopGroup group = new NioEventLoopGroup();
         try {
@@ -43,10 +47,15 @@ public class NanoDropBoxClient {
                 scanner = new Scanner(System.in);
                 directoryForControl = scanner.nextLine();
             } while (!new File(directoryForControl).isDirectory());
-            String[] allFiles = getFileList(directoryForControl);
 
+            List<String> allFiles = Arrays.stream(getFileList(directoryForControl)).toList();
+            allFiles = initPaths(allFiles);
+            allFiles.add(directoryForControl);
+            for (String allFile : allFiles) {
+                System.out.println(allFile);
+            }
             initDirectory(future, allFiles);
-            new Watchers(future, allFiles).run();
+            new Watchers(future, allFiles, this).run();
 
             boolean notStopped = true;
             while (notStopped) {
@@ -73,6 +82,7 @@ public class NanoDropBoxClient {
             }
             future.channel().closeFuture().sync();
             System.out.println("NDBC end");
+
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         } finally {
@@ -80,21 +90,26 @@ public class NanoDropBoxClient {
         }
     }
 
-    private void initDirectory(ChannelFuture f, String[] allFiles) throws InterruptedException {
+    void initDirectory(ChannelFuture f, List<String> allFiles) throws InterruptedException {
         FileUploadFile ful;
         for (String fileByFile : allFiles) {
-            if (new File(fileByFile).isDirectory()) {
-                String[] allFilesInner =  getFileList(fileByFile);
-                initDirectory(f, allFilesInner);
-            } else {
-                ful = new FileUploadFile(new File(fileByFile));
+                ful = new FileUploadFile(new File(fileByFile), name);
                 f.channel().writeAndFlush(ful).sync();
                 System.out.println(fileByFile);
+        }
+//        ful = new FileUploadFile();
+//        ful.setComand("CLOSE");
+//        f.channel().writeAndFlush(ful).sync();
+    }
+
+    List<String> initPaths(List<String> allFiles) throws InterruptedException {
+        List<String> returnedAllFilesInner = new ArrayList<>(allFiles);
+        for (String fileByFile : allFiles) {
+            if (new File(fileByFile).isDirectory()) {
+                returnedAllFilesInner.addAll(initPaths(Arrays.asList(getFileList(fileByFile))));
             }
         }
-        ful = new FileUploadFile();
-        ful.setComand("CLOSE");
-        f.channel().writeAndFlush(ful).sync();
+        return returnedAllFilesInner;
     }
 
     public String[] getFileList(String dirPath) {
@@ -106,4 +121,7 @@ public class NanoDropBoxClient {
         return filesFullPath;
     }
 
+    public String getName() {
+        return name;
+    }
 }
