@@ -14,11 +14,16 @@ public class FileUploadFile implements Serializable {
         this.name = name;
         this.file = file;
         this.fileName = file.getAbsolutePath();
-        this.comand = "OK";
     }
 
-    public FileUploadFile() {
-        this.comand = "OK";
+    public FileUploadFile(String name, String comand) {
+        this.name = name;
+        this.comand = comand;
+        this.fileName = name + comand;
+    }
+
+    public FileUploadFile(String comand) {
+        this.comand = comand;
     }
 
     public File getFile() {
@@ -37,6 +42,7 @@ public class FileUploadFile implements Serializable {
         return comand;
     }
 
-    public void setComand(String comand) {this.comand = comand;}
-
+    public void setComand(String comand) {
+        this.comand = comand;
+    }
 }

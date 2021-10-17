@@ -1,5 +1,7 @@
 package server;
 
+import auth.AuthService;
+import auth.DatabaseAuthService;
 import common.FileUploadFile;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -11,22 +13,33 @@ import java.io.IOException;
 
 public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
-    private String filePathForStore =
-            "/home/andrey/IntellijWorkPlace/NanoDropBox/server/src/main/resources/Store";
+    private final String filePathForStore =
+            "/home/andrey/IntellijWorkPlace/NanoDropBox/server/src/main/resources/Store/";
     private static final int CHUNK_LENGTH = 2000000;
+    private AuthService databaseAuthService;
+
+    public ServerDecoder() {
+        databaseAuthService = new DatabaseAuthService();
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FileUploadFile msg) throws Exception {
         System.out.println("Receive new message from Client.");
-        if (msg.getComand().equals("CLOSE")) ctx.close();
-        else writeMessage(msg);
-
+        if (msg.getFileName().length() > 0) {
+            if (msg.getFileName().equals(msg.getName() + msg.getComand())) {
+                String verify = databaseAuthService.getUsernameByLoginAndPassword(msg.getName(), msg.getComand());
+                msg.setComand(verify);
+                ctx.writeAndFlush(msg);
+            } else writeMessage(msg);
+        } else {
+            if (msg.getComand().equals("CLOSE")) ctx.close();
+        }
     }
 
     private void writeMessage(FileUploadFile msg) throws IOException {
         String filePath = msg.getFileName();
         File file = msg.getFile();
-        String destinationPath = filePathForStore + "/" + msg.getName() + filePath;
+        String destinationPath = filePathForStore + msg.getName() + filePath;
         prepareFilePlace(destinationPath, file);
         if (!file.isDirectory()) writeFile(file, destinationPath);
         else new File(destinationPath).mkdirs();

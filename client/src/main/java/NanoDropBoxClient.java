@@ -9,16 +9,19 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 
 public class NanoDropBoxClient {
 
     private static final int PORT = 12256;
     private static final String HOST = "localhost";
-    private Map<Path, Set<Path>> multiMap;
     public String directoryForControl;
-    private String name = "first";
+    private String validate = "FALSE";
+    private String login;
+    private final NanoDropBoxClient nanoDBClient = this;
 
     public void start() {
 
@@ -36,15 +39,25 @@ public class NanoDropBoxClient {
                                     new ObjectEncoder(),
                                     new ObjectDecoder(
                                             ClassResolvers.weakCachingConcurrentResolver(null)),
-                                    new ClientDecoder());
+                                    new ClientDecoder(nanoDBClient));
                         }
                     });
             System.out.println("Client started");
             ChannelFuture future = b.connect(HOST, PORT).sync();
 
+            scanner = new Scanner(System.in);
+            while (validate.equals("FALSE")) {
+                validate = "NULL";
+                System.out.println("login: ");
+                login = scanner.nextLine();
+                System.out.println("pass: ");
+                String pass = scanner.nextLine();
+                future.channel().writeAndFlush(new FileUploadFile(login, pass)).sync();
+                while (validate.equals("NULL") && future.channel().isOpen()) Thread.sleep(1000);
+            }
+
             do {
                 System.out.println("Enter Directory for sync: ");
-                scanner = new Scanner(System.in);
                 directoryForControl = scanner.nextLine();
             } while (!new File(directoryForControl).isDirectory());
 
@@ -57,8 +70,7 @@ public class NanoDropBoxClient {
             initDirectory(future, allFiles);
             new Watchers(future, allFiles, this).run();
 
-            boolean notStopped = true;
-            while (notStopped) {
+            while (true) {
                 System.out.println("Enter comand: ");
                 int comand = scanner.nextInt();
                 switch (comand) {
@@ -75,14 +87,10 @@ public class NanoDropBoxClient {
                     }
                     case (4): {
                         System.out.println("All Stopped");
-                        notStopped = false;
-                        break;
+                        System.exit(0);
                     }
                 }
             }
-            future.channel().closeFuture().sync();
-            System.out.println("NDBC end");
-
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         } finally {
@@ -90,16 +98,16 @@ public class NanoDropBoxClient {
         }
     }
 
+    public void setValidate(String validate) {
+        this.validate = validate;
+    }
+
     void initDirectory(ChannelFuture f, List<String> allFiles) throws InterruptedException {
         FileUploadFile ful;
         for (String fileByFile : allFiles) {
-                ful = new FileUploadFile(new File(fileByFile), name);
+                ful = new FileUploadFile(new File(fileByFile), login);
                 f.channel().writeAndFlush(ful).sync();
-                System.out.println(fileByFile);
         }
-//        ful = new FileUploadFile();
-//        ful.setComand("CLOSE");
-//        f.channel().writeAndFlush(ful).sync();
     }
 
     List<String> initPaths(List<String> allFiles) throws InterruptedException {
@@ -121,7 +129,7 @@ public class NanoDropBoxClient {
         return filesFullPath;
     }
 
-    public String getName() {
-        return name;
+    public String getLogin() {
+        return login;
     }
 }

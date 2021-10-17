@@ -1,7 +1,7 @@
 package auth;
 
 public interface AuthService {
-    void start();
+
     void stop();
     String getUsernameByLoginAndPassword(String login, String password);
     String changeUsername(String oldName, String newName);
