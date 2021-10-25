@@ -63,11 +63,6 @@ public class ClientsDatabaseService implements AuthService {
     }
 
     @Override
-    public void start() {
-        System.out.println("Auth service started");
-    }
-
-    @Override
     public void stop() {
         System.out.println("Auth service stopped");
     }
@@ -77,7 +72,6 @@ public class ClientsDatabaseService implements AuthService {
         try (PreparedStatement ps = connection.prepareStatement(GET_USERNAME)) {
             ps.setString(1, login);
             ps.setString(2, password);
-            System.out.println(login);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 rs.close();
@@ -86,7 +80,7 @@ public class ClientsDatabaseService implements AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "";
+        return "FALSE";
 
     }
 

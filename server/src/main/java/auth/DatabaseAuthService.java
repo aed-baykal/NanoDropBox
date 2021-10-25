@@ -5,9 +5,9 @@ import data_base.ClientsDatabaseService;
 public class DatabaseAuthService implements AuthService{
     private ClientsDatabaseService dbService;
 
-    @Override
-    public void start() {
+    public DatabaseAuthService() {
         dbService = ClientsDatabaseService.getInstance();
+        System.out.println("Auth service started");
     }
 
     @Override

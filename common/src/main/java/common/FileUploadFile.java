@@ -6,46 +6,43 @@ import java.io.Serializable;
 public class FileUploadFile implements Serializable {
 
     private File file;
-    private int starPos;
-    private byte[] bytes;
-    private int endPos;
+    private String fileName;
+    private String comand;
+    private String name;
 
-    public FileUploadFile(File file) {
+    public FileUploadFile(File file, String name) {
+        this.name = name;
         this.file = file;
-        this.starPos = 0;
-        this.bytes = new byte[(int) file.length()];
+        this.fileName = file.getAbsolutePath();
+    }
+
+    public FileUploadFile(String name, String comand) {
+        this.name = name;
+        this.comand = comand;
+        this.fileName = name + comand;
+    }
+
+    public FileUploadFile(String comand) {
+        this.comand = comand;
     }
 
     public File getFile() {
         return file;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public String getName() {
+        return name;
     }
 
-    public int getStartPos() {
-        return starPos;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setStarPos(int starPos) {
-        this.starPos = starPos;
+    public String getComand() {
+        return comand;
     }
 
-    public byte[] getBytes() {
-        return bytes;
+    public void setComand(String comand) {
+        this.comand = comand;
     }
-
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
-
-    public int getEndPos() {
-        return endPos;
-    }
-
-    public void setEndPos(int endPos) {
-        this.endPos = endPos;
-    }
-
 }
