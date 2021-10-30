@@ -7,6 +7,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class NanoDropBoxClient {
                                     new ClientDecoder(nanoDBClient));
                         }
                     });
-            System.out.println("Client started");
+            ClientApp.LOGGER_CLIENT.log(Level.valueOf("Info"), "From NanoDropBoxClient - Client started");
             ChannelFuture future = b.connect(HOST, PORT).sync();
 
             scanner = new Scanner(System.in);
@@ -72,6 +73,7 @@ public class NanoDropBoxClient {
                     Thread.sleep(3000);
                 }
                 System.out.println("All restored.");
+                ClientApp.LOGGER_CLIENT.log(Level.valueOf("Info"), "From NanoDropBoxClient - All restored.");
             }
             // Запрос адреса директории для синхронизации
             do {
@@ -95,7 +97,8 @@ public class NanoDropBoxClient {
                 switch (comand) {
                     case ("1") -> {
                         ws.onDelete(baseFilePathForStore + login);
-                        System.out.println("All deleted");
+                        System.out.println("All restored.");
+                        ClientApp.LOGGER_CLIENT.log(Level.valueOf("Info"), "From NanoDropBoxClient - All restored.");
                         allStop(future);
                     }
                     case ("2") -> {
@@ -104,7 +107,8 @@ public class NanoDropBoxClient {
                 }
             }
         } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
+            ClientApp.LOGGER_CLIENT.log(Level.valueOf("Warn"), "From NanoDropBoxClient - " + e);
+
         } finally {
             group.shutdownGracefully();
         }
@@ -112,7 +116,8 @@ public class NanoDropBoxClient {
 
     private void allStop(ChannelFuture future) {
         future.channel().writeAndFlush(new FileUploadFile(this.login, Comands.STOP));
-        System.out.println("All Stopped");
+        System.out.println("All Stopped.");
+        ClientApp.LOGGER_CLIENT.log(Level.valueOf("Info"), "From NanoDropBoxClient - All Stopped.");
         System.exit(0);
     }
 

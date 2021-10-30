@@ -7,6 +7,7 @@ import common.Comands;
 import common.FileUploadFile;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -146,16 +147,16 @@ public class ServerDecoder extends SimpleChannelInboundHandler<FileUploadFile> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("New channel is active");
+        ServerApp.LOGGER_SERVER.log(Level.valueOf("Info"), "From ServerDecoder - New channel is active");
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client inactive");
+        ServerApp.LOGGER_SERVER.log(Level.valueOf("Info"), "From ServerDecoder - Client inactive");
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ServerDecoder - " + cause.toString());
     }
 }

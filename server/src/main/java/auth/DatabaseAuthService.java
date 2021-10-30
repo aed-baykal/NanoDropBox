@@ -1,6 +1,8 @@
 package auth;
 
 import data_base.ClientsDatabaseService;
+import org.apache.logging.log4j.Level;
+import server.ServerApp;
 
 import java.util.List;
 
@@ -9,7 +11,7 @@ public class DatabaseAuthService implements AuthService{
 
     public DatabaseAuthService() {
         dbService = ClientsDatabaseService.getInstance();
-        System.out.println("Auth service started");
+        ServerApp.LOGGER_SERVER.log(Level.valueOf("Info"), "From DatabaseAuthService - Auth service started");
     }
 
     @Override

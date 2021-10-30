@@ -1,6 +1,7 @@
 import common.Comands;
 import common.FileUploadFile;
 import io.netty.channel.ChannelFuture;
+import org.apache.logging.log4j.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class Watchers implements Runnable{
                 try {
                     key = ws.take();
                 } catch (InterruptedException e) {
+                    ClientApp.LOGGER_CLIENT.log(Level.valueOf("Warn"), "From Watchers - " + e);
                     shutdown = true;
                 }
                 // Реагирование на изменение, создание, удаление
@@ -84,7 +86,7 @@ public class Watchers implements Runnable{
                 allFiles.add(filePath);
                 nDBClient.initDirectory(future, allFiles);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                ClientApp.LOGGER_CLIENT.log(Level.valueOf("Warn"), "From Watchers - " + e);
             }
         }
         createFile(key, event);
@@ -97,7 +99,7 @@ public class Watchers implements Runnable{
         try {
             future.channel().writeAndFlush(ful).sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            ClientApp.LOGGER_CLIENT.log(Level.valueOf("Warn"), "From Watchers - " + e);
         }
     }
 
@@ -108,7 +110,7 @@ public class Watchers implements Runnable{
             try {
                 allFiles = nDBClient.initPaths(allFiles);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                ClientApp.LOGGER_CLIENT.log(Level.valueOf("Warn"), "From Watchers - " + e);
             }
             for (String fileByFile : allFiles) {
                 future.channel().writeAndFlush(new FileUploadFile(new File(fileByFile), nDBClient.getLogin(), Comands.DELETE));

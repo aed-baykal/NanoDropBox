@@ -2,6 +2,8 @@ package data_base;
 
 import auth.AuthService;
 import auth.User;
+import org.apache.logging.log4j.Level;
+import server.ServerApp;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public class ClientsDatabaseService implements AuthService {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getString("AllPaths");
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
         return "NULL";
     }
@@ -40,7 +42,7 @@ public class ClientsDatabaseService implements AuthService {
             ps.setString(2, login);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
     }
 
@@ -49,7 +51,7 @@ public class ClientsDatabaseService implements AuthService {
             this.statement = connect();
             instance = this;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
     }
 
@@ -75,7 +77,7 @@ public class ClientsDatabaseService implements AuthService {
                 return login;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
         return "FALSE";
 
@@ -88,7 +90,7 @@ public class ClientsDatabaseService implements AuthService {
             ps.setString(1, newName);
             if (ps.executeUpdate() > 0) return newName;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
         return oldName;
     }
@@ -101,7 +103,7 @@ public class ClientsDatabaseService implements AuthService {
             ps.setString(3, username);
             if (ps.executeUpdate() > 0) return newPassword;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
         return oldPassword;
     }
@@ -112,7 +114,7 @@ public class ClientsDatabaseService implements AuthService {
             ps.setString(2, newPassword);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From ClientsDatabaseService - " + e);
         }
     }
 
