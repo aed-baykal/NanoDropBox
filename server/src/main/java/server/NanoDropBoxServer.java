@@ -10,6 +10,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.apache.logging.log4j.Level;
 
 public class NanoDropBoxServer {
     private static final int PORT = 12256;
@@ -38,11 +39,11 @@ public class NanoDropBoxServer {
                         }
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            System.out.println("Server started");
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Info"), "From NanoDropBoxServer - Server started");
             ChannelFuture sync = server.bind(PORT).sync();
             sync.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            ServerApp.LOGGER_SERVER.log(Level.valueOf("Warn"), "From NanoDropBoxServer - " + e);
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

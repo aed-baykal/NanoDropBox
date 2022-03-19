@@ -1,18 +1,27 @@
 package auth;
 
 import data_base.ClientsDatabaseService;
+import org.apache.logging.log4j.Level;
+import server.ServerApp;
+
+import java.util.List;
 
 public class DatabaseAuthService implements AuthService{
     private ClientsDatabaseService dbService;
 
     public DatabaseAuthService() {
         dbService = ClientsDatabaseService.getInstance();
-        System.out.println("Auth service started");
+        ServerApp.LOGGER_SERVER.log(Level.valueOf("Info"), "From DatabaseAuthService - Auth service started");
     }
 
     @Override
-    public void stop() {
-        dbService.closeConnection();
+    public String getAllPathsByLogin(String login) {
+        return dbService.getAllPathsByLogin(login);
+    }
+
+    @Override
+    public void setAllPathsByLogin(String login, String allPaths) {
+        dbService.setAllPathsByLogin(login, allPaths);
     }
 
     @Override
@@ -31,7 +40,26 @@ public class DatabaseAuthService implements AuthService{
     }
 
     @Override
-    public User newUser(String UserLogin, String UserPassword) {
-        return dbService.newUser(UserLogin, UserPassword);
+    public void newUser(String UserLogin, String UserPassword) {
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return dbService.getUsers();
+    }
+
+    @Override
+    public void addUser(User user) {
+        dbService.addUser(user);
+    }
+
+    @Override
+    public void delUser(String userName) {
+        dbService.delUser(userName);
+    }
+
+    @Override
+    public Boolean isUserOnline(User user) {
+        return dbService.isUserOnline(user);
     }
 }
